@@ -1,0 +1,80 @@
+// ====================== WEBINAR MODELS ======================
+
+enum WebinarStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum WebinarRegistrationStatus {
+  REGISTERED
+  ATTENDED
+  ABSENT
+  CANCELLED
+}
+
+enum PayrollUrgency {
+  END_OF_MONTH
+  NEXT_MONTH
+  EXPLORATION
+}
+
+enum PreferredLanguage {
+  FR
+  AR
+}
+
+model Webinar {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  scheduledAt DateTime
+  duration    Int      @default(45) // minutes
+  platform    String   // "ZOOM" | "GOOGLE_MEET"
+  meetingLink String?
+  status      WebinarStatus @default(SCHEDULED)
+  
+  // Statistiques
+  totalRegistrations Int @default(0)
+  totalAttendees     Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  registrations WebinarRegistration[]
+  
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model WebinarRegistration {
+  id        String   @id @default(uuid())
+  webinarId String
+  webinar   Webinar  @relation(fields: [webinarId], references: [id], onDelete: Cascade)
+  
+  leadId    String?  @unique
+  lead      Lead?    @relation("LeadWebinarRegistration", fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // Informations d'inscription (peut être différent du lead si inscription directe)
+  email     String
+  firstName String?
+  lastName  String?
+  phone     String?
+  companyName String?
+  
+  status    WebinarRegistrationStatus @default(REGISTERED)
+  
+  // Engagement metrics
+  attendedAt    DateTime?
+  questionsAsked Int @default(0)
+  pollResponses Json? // Réponses aux sondages
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([webinarId])
+  @@index([leadId])
+  @@index([email])
+  @@index([status])
+}

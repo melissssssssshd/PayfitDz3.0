@@ -1,0 +1,343 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantStatus {
+  PENDING
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+  CANCELED
+}
+
+enum SubscriptionPlan {
+  STARTER
+  PRO
+  ENTERPRISE
+  CUSTOM
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  UNPAID
+  CANCELED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  DEMO_SCHEDULED
+  DEMO_DONE
+  CLOSED
+  LOST
+}
+
+enum UserRole {
+  ADMIN
+  SALES
+  CUSTOMER_SUCCESS
+  CLIENT
+}
+
+// ====================== MAIN MODELS ======================
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  siret     String?  @unique
+  rc        String?
+  address   String?
+  sector    String?
+  size      String?
+  domain    String?  @unique
+  status    TenantStatus @default(PENDING)
+  modules   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  users         User[]
+  roles         Role[]
+  subscriptions Subscription[]
+  lead          Lead?        @relation("LeadToTenant")
+
+  @@index([deletedAt])
+}
+
+// Add backward relation to User
+// model User needs to be updated to include relations
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?
+  name          String?
+  userType      String    @default("ENTERPRISE") // SYSTEM | ENTERPRISE - Legacy, keeping for compatibility
+  appRole       UserRole  @default(CLIENT)
+  isMainAdmin   Boolean   @default(false)
+  emailVerified DateTime?
+  image         String?
+
+  tenantId String?
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  roleId String?
+  role   Role?    @relation(fields: [roleId], references: [id])
+
+  accounts  Account[]
+  sessions  Session[]
+  assignedLeads Lead[]    @relation("LeadAssignee")
+  clientAccount ClientAccount?
+  leadNotes     LeadNote[] @relation("LeadNoteAuthor")
+  leadInteractions LeadInteraction[] @relation("LeadInteractionAuthor")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([email])
+}
+
+model Role {
+  id          String @id @default(uuid())
+  name        String
+  permissions Json
+
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users    User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, tenantId])
+  @@index([tenantId])
+}
+
+model Lead {
+  id                String  @id @default(uuid())
+  companyName       String
+  email             String
+  firstName         String?
+  lastName          String?
+  phone             String?
+  employees         Int?
+  sector            String?
+  wilaya            String?
+  companyType       String?
+  jobTitle          String?
+  needs             Json?
+  needsPayroll      Boolean    @default(false)
+  needsCNAS         Boolean    @default(false)
+  needsLeaveManagement Boolean @default(false)
+  currentSolution   String?
+  problems          String?
+  message           String?
+  status            LeadStatus @default(NEW)
+  score             Int        @default(0)
+  metadata          Json?
+  
+  // Champs spécifiques DZ pour le processus hybride
+  payrollUrgency    String? // "END_OF_MONTH" | "NEXT_MONTH" | "EXPLORATION"
+  preferredLanguage String? // "FR" | "AR"
+  employeeRange     String? // "1-10" | "11-50" | "51-250"
+
+  convertedTenantId String? @unique
+  convertedTenant   Tenant? @relation("LeadToTenant", fields: [convertedTenantId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lastInteraction   DateTime?
+  demoDate          DateTime?
+
+  assignedToId      String?
+  assignedTo        User?      @relation("LeadAssignee", fields: [assignedToId], references: [id])
+
+  notes             LeadNote[]
+  interactions      LeadInteraction[]
+  clientAccount     ClientAccount?
+  webinarRegistration WebinarRegistration? @relation("LeadWebinarRegistration")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([assignedToId])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdBy String
+  author    User     @relation("LeadNoteAuthor", fields: [createdBy], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+  @@index([createdBy])
+}
+
+model LeadInteraction {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type      String   // "CALL", "EMAIL", "DEMO", "NOTE", "STATUS_CHANGE"
+  content   String   @db.Text
+  createdBy String
+  author    User     @relation("LeadInteractionAuthor", fields: [createdBy], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+  @@index([createdBy])
+  @@index([type])
+}
+
+model ClientAccount {
+  id              String   @id @default(uuid())
+  companyName     String
+  settings        Json?    // Stores specific payroll settings
+  employees       Json?    // Stores employee list snapshot or ref
+  
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  
+  leadId          String?  @unique
+  lead            Lead?    @relation(fields: [leadId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  tenantId             String
+  tenant               Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  planType             SubscriptionPlan   @default(STARTER)
+  status               SubscriptionStatus @default(INACTIVE)
+  currentPeriodEnd     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+// ====================== NextAuth Models ======================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ====================== WEBINAR MODELS ======================
+
+enum WebinarStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum WebinarRegistrationStatus {
+  REGISTERED
+  ATTENDED
+  ABSENT
+  CANCELLED
+}
+
+model Webinar {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  scheduledAt DateTime
+  duration    Int      @default(45) // minutes
+  platform    String   // "ZOOM" | "GOOGLE_MEET"
+  meetingLink String?
+  status      WebinarStatus @default(SCHEDULED)
+  
+  // Statistiques
+  totalRegistrations Int @default(0)
+  totalAttendees     Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  registrations WebinarRegistration[]
+  
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model WebinarRegistration {
+  id        String   @id @default(uuid())
+  webinarId String
+  webinar   Webinar  @relation(fields: [webinarId], references: [id], onDelete: Cascade)
+  
+  leadId    String?  @unique
+  lead      Lead?    @relation("LeadWebinarRegistration", fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // Informations d'inscription (peut être différent du lead si inscription directe)
+  email     String
+  firstName String?
+  lastName  String?
+  phone     String?
+  companyName String?
+  
+  status    WebinarRegistrationStatus @default(REGISTERED)
+  
+  // Engagement metrics
+  attendedAt    DateTime?
+  questionsAsked Int @default(0)
+  pollResponses Json? // Réponses aux sondages
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([webinarId])
+  @@index([leadId])
+  @@index([email])
+  @@index([status])
+}
