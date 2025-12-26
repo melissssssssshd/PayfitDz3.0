@@ -16,7 +16,11 @@ export default defineConfig({
     migrations: {
         path: "prisma/migrations",
     },
-    engine: "classic",
+    // Removed 'engine: "classic",' as it's not a valid property in PrismaConfig.
+    // If you need to specify the engine type, do so in prisma/schema.prisma under the generator block, e.g.:
+    // generator client {
+    //   engineType = "library"
+    // }
     datasource: {
         url: databaseUrl,
     },

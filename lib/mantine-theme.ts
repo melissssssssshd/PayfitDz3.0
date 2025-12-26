@@ -1,23 +1,23 @@
 import { createTheme, type MantineColorsTuple, rem } from "@mantine/core"
 
-// Custom Green palette from the provided color image
-const payfitGreen: MantineColorsTuple = [
-  "#DAF1DE", // 0: Lightest
-  "#C2E7C9", // 1
-  "#A8DDB4", // 2
-  "#8EB69B", // 3: Medium Light (from image)
-  "#6CA382", // 4
-  "#4A9069", // 5
-  "#235347", // 6: Primary Brand (from image)
-  "#163832", // 7: Dark (from image)
-  "#0B2B26", // 8: Darker (from image)
-  "#051F20", // 9: Darkest (from image)
+// Custom Violet palette from the provided color request (Pastel)
+const payfitViolet: MantineColorsTuple = [
+  "#FDFBFF", // 0: Ultra Lightest
+  "#F5F3FF", // 1: Secondary (Pastel)
+  "#EBE7FF", // 2
+  "#DDD6FE", // 3: Soft Success
+  "#C4B5FD", // 4
+  "#A78BFA", // 5
+  "#8B7FFF", // 6: Primary Brand (Pastel)
+  "#7C66E6", // 7
+  "#6D4DBF", // 8
+  "#5B3A99", // 9: Darkest
 ]
 
 export const theme = createTheme({
   primaryColor: "payfit",
   colors: {
-    payfit: payfitGreen,
+    payfit: payfitViolet,
   },
   defaultRadius: "md",
   cursorType: "pointer",

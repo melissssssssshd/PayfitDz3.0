@@ -2,41 +2,50 @@
 @import "tw-animate-css";
 
 :root {
-  /* PayFit Green palette from the provided color swatch */
-  --background: #fdfdfd;
-  --foreground: #051f20;
-  --card: #ffffff;
-  --card-foreground: #163832;
-  --popover: #ffffff;
-  --popover-foreground: #163832;
-  --primary: #235347;
-  --primary-foreground: #ffffff;
-  --secondary: #daf1de;
-  --secondary-foreground: #0b2b26;
-  --muted: #f1f3f5;
-  --muted-foreground: #8eb69b;
-  --accent: #8eb69b;
-  --accent-foreground: #ffffff;
-  --destructive: #fa5252;
+  /* New Palette */
+  --background: #F8F9FC; /* Blanc très légèrement bleuté */
+  --foreground: #1F2937; /* Gris texte primaire */
+  --card: #FFFFFF; /* Blocs saillants */
+  --card-foreground: #1F2937;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F2937;
+  --primary: #8B7FFF; /* Violet Pastel Principal */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F3FF; /* Violet Pastel Ultra-clair */
+  --secondary-foreground: #1F2937;
+  --muted: #E5E7EB; /* Gris séparateurs */
+  --muted-foreground: #6B7280; /* Gris texte secondaire */
+  --accent: #F5F3FF;
+  --accent-foreground: #1F2937;
+  --destructive: #fa5252; /* Kept from previous */
   --destructive-foreground: #ffffff;
-  --border: #e9ecef;
-  --input: #e9ecef;
-  --ring: #235347;
-  --chart-1: #235347;
-  --chart-2: #8eb69b;
-  --chart-3: #4a9069;
-  --chart-4: #daf1de;
-  --chart-5: #0b2b26;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #8B7FFF;
+  
+  /* Custom Status Colors */
+  --success: #C4B5FD; /* Violet clair (Success) */
+  --success-foreground: #1F2937;
+  --warning: #FB923C; /* Orange deadline */
+  --warning-foreground: #FFFFFF;
+
+  /* Charts - Update if needed, or map to new palette */
+  --chart-1: #8B7FFF;
+  --chart-2: #C4B5FD;
+  --chart-3: #FB923C;
+  --chart-4: #E8E5FF;
+  --chart-5: #1F2937;
+
   --radius: 12px;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #163832;
-  --sidebar-primary: #235347;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #daf1de;
-  --sidebar-accent-foreground: #0b2b26;
-  --sidebar-border: #e9ecef;
-  --sidebar-ring: #235347;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1F2937;
+  --sidebar-primary: #8B7FFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F3FF;
+  --sidebar-accent-foreground: #1F2937;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #8B7FFF;
 }
 
 @theme inline {
@@ -66,6 +75,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;

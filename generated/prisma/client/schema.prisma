@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../generated/prisma/client"
+  output   = "../generated/prisma/client"
 }
 
 datasource db {
@@ -51,24 +51,24 @@ enum UserRole {
 // ====================== MAIN MODELS ======================
 
 model Tenant {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
   name      String
-  siret     String?  @unique
+  siret     String?      @unique
   rc        String?
   address   String?
   sector    String?
   size      String?
-  domain    String?  @unique
+  domain    String?      @unique
   status    TenantStatus @default(PENDING)
   modules   Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   deletedAt DateTime?
 
   users         User[]
   roles         Role[]
   subscriptions Subscription[]
-  lead          Lead?        @relation("LeadToTenant")
+  lead          Lead?          @relation("LeadToTenant")
 
   @@index([deletedAt])
 }
@@ -88,16 +88,16 @@ model User {
   image         String?
 
   tenantId String?
-  tenant   Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
 
   roleId String?
-  role   Role?    @relation(fields: [roleId], references: [id])
+  role   Role?   @relation(fields: [roleId], references: [id])
 
-  accounts  Account[]
-  sessions  Session[]
-  assignedLeads Lead[]    @relation("LeadAssignee")
-  clientAccount ClientAccount?
-  leadNotes     LeadNote[] @relation("LeadNoteAuthor")
+  accounts         Account[]
+  sessions         Session[]
+  assignedLeads    Lead[]            @relation("LeadAssignee")
+  clientAccount    ClientAccount?
+  leadNotes        LeadNote[]        @relation("LeadNoteAuthor")
   leadInteractions LeadInteraction[] @relation("LeadInteractionAuthor")
 
   createdAt DateTime @default(now())
@@ -124,28 +124,28 @@ model Role {
 }
 
 model Lead {
-  id                String  @id @default(uuid())
-  companyName       String
-  email             String
-  firstName         String?
-  lastName          String?
-  phone             String?
-  employees         Int?
-  sector            String?
-  wilaya            String?
-  companyType       String?
-  jobTitle          String?
-  needs             Json?
-  needsPayroll      Boolean    @default(false)
-  needsCNAS         Boolean    @default(false)
-  needsLeaveManagement Boolean @default(false)
-  currentSolution   String?
-  problems          String?
-  message           String?
-  status            LeadStatus @default(NEW)
-  score             Int        @default(0)
-  metadata          Json?
-  
+  id                   String     @id @default(uuid())
+  companyName          String
+  email                String
+  firstName            String?
+  lastName             String?
+  phone                String?
+  employees            Int?
+  sector               String?
+  wilaya               String?
+  companyType          String?
+  jobTitle             String?
+  needs                Json?
+  needsPayroll         Boolean    @default(false)
+  needsCNAS            Boolean    @default(false)
+  needsLeaveManagement Boolean    @default(false)
+  currentSolution      String?
+  problems             String?
+  message              String?
+  status               LeadStatus @default(NEW)
+  score                Int        @default(0)
+  metadata             Json?
+
   // Champs spécifiques DZ pour le processus hybride
   payrollUrgency    String? // "END_OF_MONTH" | "NEXT_MONTH" | "EXPLORATION"
   preferredLanguage String? // "FR" | "AR"
@@ -157,15 +157,15 @@ model Lead {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  lastInteraction   DateTime?
-  demoDate          DateTime?
+  lastInteraction DateTime?
+  demoDate        DateTime?
 
-  assignedToId      String?
-  assignedTo        User?      @relation("LeadAssignee", fields: [assignedToId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("LeadAssignee", fields: [assignedToId], references: [id])
 
-  notes             LeadNote[]
-  interactions      LeadInteraction[]
-  clientAccount     ClientAccount?
+  notes               LeadNote[]
+  interactions        LeadInteraction[]
+  clientAccount       ClientAccount?
   webinarRegistration WebinarRegistration? @relation("LeadWebinarRegistration")
 
   @@index([status])
@@ -190,7 +190,7 @@ model LeadInteraction {
   id        String   @id @default(cuid())
   leadId    String
   lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  type      String   // "CALL", "EMAIL", "DEMO", "NOTE", "STATUS_CHANGE"
+  type      String // "CALL", "EMAIL", "DEMO", "NOTE", "STATUS_CHANGE"
   content   String   @db.Text
   createdBy String
   author    User     @relation("LeadInteractionAuthor", fields: [createdBy], references: [id])
@@ -202,25 +202,25 @@ model LeadInteraction {
 }
 
 model ClientAccount {
-  id              String   @id @default(uuid())
-  companyName     String
-  settings        Json?    // Stores specific payroll settings
-  employees       Json?    // Stores employee list snapshot or ref
-  
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id])
-  
-  leadId          String?  @unique
-  lead            Lead?    @relation(fields: [leadId], references: [id])
+  id          String @id @default(uuid())
+  companyName String
+  settings    Json? // Stores specific payroll settings
+  employees   Json? // Stores employee list snapshot or ref
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  leadId String? @unique
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
-  id                   String             @id @default(uuid())
-  tenantId             String
-  tenant               Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id       String @id @default(uuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   stripeCustomerId     String?
   stripeSubscriptionId String?
@@ -290,53 +290,53 @@ enum WebinarRegistrationStatus {
 }
 
 model Webinar {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
-  description String?  @db.Text
+  description String?       @db.Text
   scheduledAt DateTime
-  duration    Int      @default(45) // minutes
-  platform    String   // "ZOOM" | "GOOGLE_MEET"
+  duration    Int           @default(45) // minutes
+  platform    String // "ZOOM" | "GOOGLE_MEET"
   meetingLink String?
   status      WebinarStatus @default(SCHEDULED)
-  
+
   // Statistiques
   totalRegistrations Int @default(0)
   totalAttendees     Int @default(0)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   registrations WebinarRegistration[]
-  
+
   @@index([scheduledAt])
   @@index([status])
 }
 
 model WebinarRegistration {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   webinarId String
-  webinar   Webinar  @relation(fields: [webinarId], references: [id], onDelete: Cascade)
-  
-  leadId    String?  @unique
-  lead      Lead?    @relation("LeadWebinarRegistration", fields: [leadId], references: [id], onDelete: Cascade)
-  
+  webinar   Webinar @relation(fields: [webinarId], references: [id], onDelete: Cascade)
+
+  leadId String? @unique
+  lead   Lead?   @relation("LeadWebinarRegistration", fields: [leadId], references: [id], onDelete: Cascade)
+
   // Informations d'inscription (peut être différent du lead si inscription directe)
-  email     String
-  firstName String?
-  lastName  String?
-  phone     String?
+  email       String
+  firstName   String?
+  lastName    String?
+  phone       String?
   companyName String?
-  
-  status    WebinarRegistrationStatus @default(REGISTERED)
-  
+
+  status WebinarRegistrationStatus @default(REGISTERED)
+
   // Engagement metrics
-  attendedAt    DateTime?
-  questionsAsked Int @default(0)
-  pollResponses Json? // Réponses aux sondages
-  
+  attendedAt     DateTime?
+  questionsAsked Int       @default(0)
+  pollResponses  Json? // Réponses aux sondages
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([webinarId])
   @@index([leadId])
   @@index([email])
